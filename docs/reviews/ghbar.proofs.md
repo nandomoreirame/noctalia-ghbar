@@ -1,8 +1,8 @@
 # Proofs: ghbar
 
-- **Commit:** 2cad092f125dbd633221406ea47aead0a7e8e35b
-- **Tree:** dirty (docs/plans/2026-11-10-ghbar.md, docs/specs/ghbar/SPEC.md, service.luau, tests/service_open.test.luau, tests/widget.test.luau, widget.luau)
-- **Result:** FAIL
+- **Commit:** 2b8815b91600d09e973e702fec27f58452a46e17
+- **Tree:** clean
+- **Result:** PASS
 
 | Check | Requirements | Proof | Status |
 | --- | --- | --- | --- |
