@@ -1,7 +1,7 @@
 feature: ghbar
 phase: implement
-review: awaiting fix (round 4, 4 findings)
-independent_reviewer_tried: claude (round 4 done); opencode exit 3 earlier; agy/codex disabled
+review: pending (self-assessment) after round-4 fixes
+independent_reviewer_tried: opencode exit 3 on re-review after round-4 fixes; claude did round 4; agy/codex disabled
 spec_path: docs/specs/ghbar/SPEC.md
 plan_path: docs/plans/2026-11-10-ghbar.md
 implemented_by: grok
