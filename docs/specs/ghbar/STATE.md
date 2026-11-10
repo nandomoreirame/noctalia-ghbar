@@ -1,7 +1,7 @@
 feature: ghbar
 phase: implement
-review: pending (self-assessment)
-independent_reviewer_tried: opencode exit 3 (unavailable) on fix-round re-review; agy/codex disabled; Claude panel only in Claude Code
+review: awaiting fix (round 4, 4 findings)
+independent_reviewer_tried: claude (round 4 done); opencode exit 3 earlier; agy/codex disabled
 spec_path: docs/specs/ghbar/SPEC.md
 plan_path: docs/plans/2026-11-10-ghbar.md
 implemented_by: grok
@@ -38,3 +38,9 @@ notes: |
     body reaches the network. No fallback to `gh api -X PATCH` needed.
   - Assumption row "noctalia.http accepts method = PATCH" held; keep markRead
     on noctalia.http.
+
+  Round 4 findings fix (2026-11-10, grok):
+  - pendingMark retained after PATCH success until a newer poll gen applies.
+  - REQ-010..013 renumbered (empty-click is P1 REQ-010); Present.label claim → Gh.parseToken.
+  - C10 added; widget empty-click uses view.empty.
+  - ./run-tests: 72 passed; validate_spec/plan and verify-claims OK.

@@ -14,7 +14,9 @@ local INBOX_URL = "https://github.com/notifications"
 local state = poll.create()
 local nextPollAt = 0
 local generation = 0
-local pendingMark = {} -- id -> true while a mark-read PATCH is in flight
+-- id -> true while PATCH in flight; or generation number after PATCH success
+-- (keep filtering until a poll with gen greater than that number has applied).
+local pendingMark = {}
 
 local function now(): number
 	return noctalia.nowMs()
@@ -101,6 +103,15 @@ local function onHttp(gen: number, res: any)
 	local fresh = poll.fresh(previous, items)
 	state = poll.succeed(state, items, now())
 	maybeNotify(fresh)
+	local clearIds = {}
+	for id, marker in pendingMark do
+		if typeof(marker) == "number" and gen > marker then
+			table.insert(clearIds, id)
+		end
+	end
+	for _, id in clearIds do
+		pendingMark[id] = nil
+	end
 	publish()
 end
 
@@ -191,12 +202,14 @@ local function openItem(payload: any)
 
 	withToken(function(token)
 		markRead(token, id, function(ok, status)
-			pendingMark[id] = nil
 			if ok then
+				-- Keep filtering until a poll that started after this answer applies.
+				pendingMark[id] = generation
 				clearError()
 				publish()
 				return
 			end
+			pendingMark[id] = nil
 			state = poll.restore(state, removed.item, removed.index)
 			applyFail("mark", status)
 		end)

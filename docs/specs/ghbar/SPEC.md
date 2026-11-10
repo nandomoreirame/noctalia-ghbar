@@ -20,7 +20,7 @@ The author runs Noctalia v5 and maintains one repo per plugin (`nandomoreirame/n
 
 | Claim | Source (file:line) | Verified |
 |-------|--------------------|----------|
-| function Present.label(raw: any): string | `lib/present.luau:10` | yes |
+| function Gh.parseToken(res: { exitCode: number, stdout: string?, stderr: string? }): any | `lib/gh.luau:11` | yes |
 | local PANEL = "nandomoreirame/ghbar:panel" | `widget.luau:6` | yes |
 | `noctalia.http` accepts `method = "PATCH"` (docs list only `method = "GET"` as example) | n/a | assumption |
 
@@ -37,13 +37,13 @@ The author runs Noctalia v5 and maintains one repo per plugin (`nandomoreirame/n
 7. **[REQ-007]** WHEN a notification is clicked THEN the system SHALL open its web page in the browser and call `PATCH /notifications/threads/{id}`; IF the PATCH fails THEN the item SHALL be restored and an error shown
 8. **[REQ-008]** WHEN the plugin is created THEN it SHALL start from `noctalia-scaffold` and `./run-tests` SHALL pass before any ghbar logic is added
 9. **[REQ-009]** WHEN the widget or panel renders THEN the system SHALL use only theme tokens (no hex colors) and explicit visual properties on every render
-13. **[REQ-013]** WHEN the widget is clicked and the count is 0 with no error THEN the system SHALL open `https://github.com/notifications` in the browser without opening the panel
+10. **[REQ-010]** WHEN the widget is clicked and the published view reports an empty inbox (`empty = true`) THEN the system SHALL open `https://github.com/notifications` in the browser without opening the panel
 
 ### P2 (Should Have)
 
-10. **[REQ-010]** WHEN a notification arrives that was not in the previous poll AND the toast setting is on THEN the system SHALL show a desktop notification; the setting SHALL default to off
-11. **[REQ-011]** WHEN the user presses refresh THEN the system SHALL poll immediately; WHEN the list is empty the panel SHALL show an empty state; all strings SHALL exist in `en` and `pt-BR`
-12. **[REQ-012]** WHEN the README is written THEN it SHALL follow `docs/README.template.md`, open with the problem, include a Security section on the token and network use, and ship a panel screenshot
+11. **[REQ-011]** WHEN a notification arrives that was not in the previous poll AND the toast setting is on THEN the system SHALL show a desktop notification; the setting SHALL default to off
+12. **[REQ-012]** WHEN the user presses refresh THEN the system SHALL poll immediately; WHEN the list is empty the panel SHALL show an empty state; all strings SHALL exist in `en` and `pt-BR`
+13. **[REQ-013]** WHEN the README is written THEN it SHALL follow `docs/README.template.md`, open with the problem, include a Security section on the token and network use, and ship a panel screenshot
 
 ### P3 (Nice to Have)
 
@@ -66,7 +66,7 @@ None.
 3. **Unread only, like the website** - Chose the API default over `participating=true` so the count matches github.com. ADR: none
 4. **Always visible** - Chose a dimmed glyph at zero over hiding the widget, so the bar stays a click target for the GitHub inbox. The error state uses the alert glyph. ADR: none
 5. **Scaffold structure** - Pure `lib/` modules, thin `widget.luau` and `panel.luau`, polling in `service.luau` as in aibar. ADR: none
-6. **Empty click opens the web inbox** - Chose `xdg-open https://github.com/notifications` over an empty panel when count is 0 and there is no error. ADR: none
+6. **Empty click opens the web inbox** - Chose `xdg-open https://github.com/notifications` over an empty panel when the published view has `empty = true` (loaded, no error, zero items). A click before the first poll finishes opens the panel instead. ADR: none
 
 ## Grilling Log
 
@@ -117,7 +117,7 @@ None.
 | REQ-007 | Click opens page and marks as read | P1 | Pending |
 | REQ-008 | Start from scaffold, tests green | P1 | Pending |
 | REQ-009 | Theme tokens only | P1 | Pending |
-| REQ-010 | Optional toast, off by default | P2 | Pending |
-| REQ-011 | Refresh, empty state, i18n | P2 | Pending |
-| REQ-012 | README from template with Security section | P2 | Pending |
-| REQ-013 | Empty click opens github.com/notifications | P1 | Pending |
+| REQ-010 | Empty click opens github.com/notifications | P1 | Pending |
+| REQ-011 | Optional toast, off by default | P2 | Pending |
+| REQ-012 | Refresh, empty state, i18n | P2 | Pending |
+| REQ-013 | README from template with Security section | P2 | Pending |

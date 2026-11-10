@@ -1,8 +1,8 @@
 # Proofs: ghbar
 
-- **Commit:** f381e80b0742d631ce2fe75c192f39d74bc22b5d
-- **Tree:** clean
-- **Result:** PASS
+- **Commit:** 2cad092f125dbd633221406ea47aead0a7e8e35b
+- **Tree:** dirty (docs/plans/2026-11-10-ghbar.md, docs/specs/ghbar/SPEC.md, service.luau, tests/service_open.test.luau, tests/widget.test.luau, widget.luau)
+- **Result:** FAIL
 
 | Check | Requirements | Proof | Status |
 | --- | --- | --- | --- |
@@ -15,20 +15,20 @@
 | C7 | REQ-007 | run unit \| ok restores the item when the PATCH fails | PASS |
 | C8 | REQ-008 | run unit \| ok declares the service, the toast setting and the panel size | PASS |
 | C9 | REQ-009 | run unit \| ok entries use theme tokens only | PASS |
+| C10 | REQ-010 | run unit \| ok opens the inbox url on empty click instead of the panel | PASS |
 
 ## Runs
 
 ### run unit (exit 0)
 
 ```text
-  ok opens the page and marks the thread read
-  ok restores the item when the PATCH fails
   ok keeps the item removed on a 205 answer
   ok ignores an id that is not in the list
   ok refresh polls immediately
   ok opens only https github.com urls
   ok keeps a pending mark-read id out of a concurrent poll
   ok does not duplicate a row when restore races a poll
+  ok keeps a marked id filtered after PATCH until a newer poll applies
   ok opens the web inbox on cmd.inbox
 service poll
   ok polls the notifications endpoint every 60 seconds
@@ -57,8 +57,9 @@ widget
   ok shows only the glyph on a vertical bar
   ok toggles the panel on click
   ok opens the inbox url on empty click instead of the panel
+  ok toggles the panel before the first poll finishes
   ok opens the panel on error even when the count is zero
   ok sets a translated tooltip with the count
   ok entries use theme tokens only
-70 passed, 0 failed
+72 passed, 0 failed
 ```

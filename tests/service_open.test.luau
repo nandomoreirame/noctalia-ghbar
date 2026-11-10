@@ -193,6 +193,27 @@ describe("service open", function()
 		assert.equal(#v.rows, 3)
 	end)
 
+	it("keeps a marked id filtered after PATCH until a newer poll applies", function()
+		local s = loadWithFixture()
+		-- Start a concurrent poll (GET in flight) before the PATCH lands.
+		s.env.noctalia.state.set("cmd.refresh", 1)
+		local getIdx = #httpCalls(s)
+		assert.equal(httpCalls(s)[getIdx][1].method, "GET")
+		s.env.noctalia.state.set("cmd.open", { id = "1001", n = 1 })
+		assert.equal(#lastView(s).rows, 2)
+		local _, _, patchCb = lastPatch(s)
+		assert.equal(patchCb ~= nil, true)
+		patchCb({ ok = true, status = 205, body = "" })
+		-- Stale GET still lists 1001 (GitHub had not marked it yet).
+		answerHttp(s, getIdx, { ok = true, status = 200, body = FIXTURE })
+		assert.equal(#lastView(s).rows, 2)
+		local ids = {}
+		for _, row in lastView(s).rows do
+			ids[row.id] = true
+		end
+		assert.equal(ids["1001"], nil)
+	end)
+
 	it("opens the web inbox on cmd.inbox", function()
 		local s = loadWithFixture()
 		local before = #mock.calls(s.env, "noctalia.runAsync")

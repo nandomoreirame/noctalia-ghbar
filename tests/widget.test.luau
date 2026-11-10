@@ -117,6 +117,22 @@ describe("widget", function()
 		assert.equal(w.env.noctalia.state.get("cmd.inbox"), 2)
 	end)
 
+	it("toggles the panel before the first poll finishes", function()
+		local w = boot({
+			glyph = "brand-github",
+			glyphColor = "on_surface_variant",
+			label = "",
+			count = 0,
+			empty = false,
+			error = nil,
+			rows = {},
+		})
+		local beforeInbox = w.env.noctalia.state.get("cmd.inbox")
+		w.call("onClick")
+		assert.equal(last(w, "noctalia.togglePanel")[1], "nandomoreirame/ghbar:panel")
+		assert.equal(w.env.noctalia.state.get("cmd.inbox"), beforeInbox)
+	end)
+
 	it("opens the panel on error even when the count is zero", function()
 		local w = boot({
 			glyph = "alert-triangle",

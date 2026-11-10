@@ -1,5 +1,5 @@
 -- Bar widget: always-visible GitHub glyph + count from the published view.
--- Empty inbox click opens github.com/notifications; otherwise toggles the panel.
+-- When view.empty is true, click opens github.com/notifications; otherwise toggles the panel.
 
 local present = require("./lib/present.luau")
 
@@ -43,9 +43,7 @@ end
 
 function onClick()
 	local v = noctalia.state.get("view")
-	local count = if typeof(v) == "table" then (v.count or 0) else 0
-	local err = typeof(v) == "table" and v.error ~= nil
-	if count == 0 and not err then
+	if typeof(v) == "table" and v.empty == true then
 		noctalia.state.set("cmd.inbox", present.bump(noctalia.state.get("cmd.inbox")))
 		return
 	end
