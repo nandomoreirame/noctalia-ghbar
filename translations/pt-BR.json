@@ -1,6 +1,7 @@
 {
   "bar": {
-    "tooltip": "Notificações do GitHub"
+    "tooltip": "{n} notificações não lidas do GitHub",
+    "tooltip_error": "Notificações do GitHub indisponíveis"
   },
   "notify": {
     "title": "GitHub",

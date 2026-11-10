@@ -1,5 +1,6 @@
 local assert = require("./support/assert")
 local runner = require("./support/runner")
+local modules = require("./support/modules")
 local mock = require("./support/noctalia_mock")
 local entry = require("./support/entry")
 
@@ -10,55 +11,129 @@ local function last(loaded, path)
 	return calls[#calls]
 end
 
-local function texts(node, out)
-	out = out or {}
-	if typeof(node) == "table" and node.type then
-		if node.props.text then
-			table.insert(out, node.props.text)
-		end
-		for _, child in node.children or {} do
-			texts(child, out)
-		end
+local function boot(view, opts)
+	local o = opts or {}
+	local w = entry.load("widget.luau", { vertical = o.vertical == true })
+	if view ~= nil then
+		w.env.noctalia.state.set("view", view)
 	end
-	return out
+	return w
 end
 
 describe("widget", function()
-	it("renders the glyph and the configured label", function()
-		local w = entry.load("widget.luau", { config = { label = "hello" } })
+	it("shows the glyph and 50+ from fifty", function()
+		local w = boot({
+			visible = true,
+			glyph = "brand-github",
+			label = "50+",
+			count = 50,
+			empty = false,
+			error = nil,
+			rows = {},
+		})
 		local tree = last(w, "barWidget.render")[1]
-		assert.equal(tree.type, "row")
 		assert.equal(tree.children[1].type, "glyph")
-		assert.equal(texts(tree)[1], "hello")
+		assert.equal(tree.children[1].props.name, "brand-github")
+		assert.equal(tree.children[2].props.text, "50+")
 	end)
 
-	it("falls back to ghbar when the setting is blank", function()
-		local w = entry.load("widget.luau", { config = { label = "  " } })
-		assert.equal(texts(last(w, "barWidget.render")[1])[1], "ghbar")
+	it("hides the widget at zero without error", function()
+		local w = boot({
+			visible = false,
+			glyph = "brand-github",
+			label = "0",
+			count = 0,
+			empty = true,
+			error = nil,
+			rows = {},
+		})
+		assert.equal(last(w, "barWidget.setVisible")[1], false)
+
+		w.env.noctalia.state.set("view", {
+			visible = true,
+			glyph = "brand-github",
+			label = "1",
+			count = 1,
+			empty = false,
+			error = nil,
+			rows = {},
+		})
+		assert.equal(last(w, "barWidget.setVisible")[1], true)
+	end)
+
+	it("shows the alert glyph on error", function()
+		local w = boot({
+			visible = true,
+			glyph = "alert-triangle",
+			label = "0",
+			count = 0,
+			empty = false,
+			error = { kind = "auth", status = 401 },
+			rows = {},
+		})
+		local glyph = last(w, "barWidget.render")[1].children[1]
+		assert.equal(glyph.props.name, "alert-triangle")
+		assert.equal(glyph.props.color, "error")
 	end)
 
 	it("shows only the glyph on a vertical bar", function()
-		local w = entry.load("widget.luau", { vertical = true, config = { label = "ghbar" } })
+		local w = boot({
+			visible = true,
+			glyph = "brand-github",
+			label = "3",
+			count = 3,
+			empty = false,
+			error = nil,
+			rows = {},
+		}, { vertical = true })
 		local tree = last(w, "barWidget.render")[1]
 		assert.equal(tree.type, "column")
 		assert.equal(#tree.children, 1)
+		assert.equal(tree.children[1].type, "glyph")
 	end)
 
-	it("uses the translated tooltip", function()
-		local w = entry.load("widget.luau", { config = { label = "ghbar" } })
-		assert.equal(last(w, "barWidget.setTooltip")[1], "bar.tooltip")
-	end)
-
-	it("toggles its panel on click", function()
-		local w = entry.load("widget.luau", { config = { label = "ghbar" } })
+	it("toggles the panel on click", function()
+		local w = boot({
+			visible = true,
+			glyph = "brand-github",
+			label = "1",
+			count = 1,
+			empty = false,
+			error = nil,
+			rows = {},
+		})
 		w.call("onClick")
 		assert.equal(last(w, "noctalia.togglePanel")[1], "nandomoreirame/ghbar:panel")
 	end)
 
-	it("re-renders on update so a changed setting shows up", function()
-		local w = entry.load("widget.luau", { config = { label = "ghbar" } })
-		local before = #mock.calls(w.env, "barWidget.render")
-		w.call("update")
-		assert.equal(#mock.calls(w.env, "barWidget.render"), before + 1)
+	it("sets a translated tooltip with the count", function()
+		local w = boot({
+			visible = true,
+			glyph = "brand-github",
+			label = "3",
+			count = 3,
+			empty = false,
+			error = nil,
+			rows = {},
+		})
+		assert.equal(last(w, "barWidget.setTooltip")[1], "bar.tooltip")
+
+		w.env.noctalia.state.set("view", {
+			visible = true,
+			glyph = "alert-triangle",
+			label = "0",
+			count = 0,
+			empty = false,
+			error = { kind = "network", status = 0 },
+			rows = {},
+		})
+		assert.equal(last(w, "barWidget.setTooltip")[1], "bar.tooltip_error")
+	end)
+
+	it("entries use theme tokens only", function()
+		for _, path in { "widget.luau", "panel.luau", "service.luau" } do
+			local source = modules.text(path)
+			assert.equal(string.find(source, "#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]") == nil, true)
+		end
 	end)
 end)
