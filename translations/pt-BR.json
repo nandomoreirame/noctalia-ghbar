@@ -2,6 +2,10 @@
   "bar": {
     "tooltip": "Notificações do GitHub"
   },
+  "notify": {
+    "title": "GitHub",
+    "more": "mais {n} notificações novas"
+  },
   "settings": {
     "notify_new": {
       "label": "Toast na área de trabalho para novas notificações",

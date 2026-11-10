@@ -40,6 +40,29 @@ local function clearError()
 	}
 end
 
+local function toastEnabled(): boolean
+	local ok, val = pcall(function()
+		return noctalia.getConfig("notify_new")
+	end)
+	return ok and val == true
+end
+
+local function maybeNotify(fresh: { any })
+	if not toastEnabled() or #fresh == 0 then
+		return
+	end
+	local limit = 3
+	local shown = math.min(limit, #fresh)
+	for i = 1, shown do
+		local item = fresh[i]
+		noctalia.notify(item.repo, item.title)
+	end
+	local rest = #fresh - shown
+	if rest > 0 then
+		noctalia.notify(noctalia.tr("notify.title"), noctalia.tr("notify.more", { n = rest }))
+	end
+end
+
 local function onHttp(gen: number, res: any)
 	if gen ~= generation then
 		return
@@ -64,7 +87,10 @@ local function onHttp(gen: number, res: any)
 		return
 	end
 	noctalia.log("ghbar poll status 200")
+	local previous = state
+	local fresh = poll.fresh(previous, parsed.items)
 	state = poll.succeed(state, parsed.items, now())
+	maybeNotify(fresh)
 	publish()
 end
 

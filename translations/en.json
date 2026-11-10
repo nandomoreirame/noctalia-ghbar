@@ -2,6 +2,10 @@
   "bar": {
     "tooltip": "GitHub notifications"
   },
+  "notify": {
+    "title": "GitHub",
+    "more": "{n} more new notifications"
+  },
   "settings": {
     "notify_new": {
       "label": "Desktop toast for new notifications",

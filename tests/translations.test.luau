@@ -9,6 +9,8 @@ local json = mock.new().noctalia.json
 
 local REQUIRED = {
 	"bar.tooltip",
+	"notify.more",
+	"notify.title",
 	"settings.notify_new.description",
 	"settings.notify_new.label",
 }
