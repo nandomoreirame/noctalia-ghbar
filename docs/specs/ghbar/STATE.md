@@ -25,3 +25,16 @@ notes: |
   - Did not click a real notification (would mark the user's thread read).
   - screenshots/panel.png remains a demo mockup (octo/hello), no personal repos.
   - Dotfiles bar/plugins edits are uncommitted in ~/.dotfiles.
+
+  Review findings fix round (2026-11-10, grok):
+  - ./run-tests: 70 passed, 0 failed after addressing all 9 open findings.
+  - PATCH live probe on already-read thread 27093518653: gh api -X PATCH
+    notifications/threads/<id> → HTTP 205 Reset Content (same status the
+    service treats as success). Unread inbox stayed at 0.
+  - Host noctalia.http PATCH support confirmed from noctalia-dev/noctalia source:
+    HttpRequest.method uses CURLOPT_CUSTOMREQUEST for non-GET/POST
+    (src/net/http_client.cpp); luau_host passes the method string through
+    (src/scripting/luau_host.cpp). aibar live smoke already proved POST with
+    body reaches the network. No fallback to `gh api -X PATCH` needed.
+  - Assumption row "noctalia.http accepts method = PATCH" held; keep markRead
+    on noctalia.http.
