@@ -24,11 +24,10 @@ notes: |
   - gh api notifications: 1 unread (matches expected visible widget)
   - Did not click a real notification (would mark the user's thread read).
   - screenshots/panel.png remains a demo mockup (octo/hello), no personal repos.
-  - Dotfiles bar/plugins edits are uncommitted in ~/.dotfiles.
 
   Review findings fix round (2026-11-10, grok):
   - ./run-tests: 70 passed, 0 failed after addressing all 9 open findings.
-  - PATCH live probe on already-read thread 27093518653: gh api -X PATCH
+  - PATCH live probe on already-read thread <id>: gh api -X PATCH
     notifications/threads/<id> → HTTP 205 Reset Content (same status the
     service treats as success). Unread inbox stayed at 0.
   - Host noctalia.http PATCH support confirmed from noctalia-dev/noctalia source:
