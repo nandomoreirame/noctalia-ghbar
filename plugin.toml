@@ -4,17 +4,21 @@ version = "0.1.0"
 plugin_api = 22
 author = "Fernando Moreira Costa"
 license = "MIT"
-icon = "sparkles"
-description = "Hello World template for Noctalia v5 plugins: a bar label that opens a dropdown panel."
-tags = ["template", "example", "bar"]
+icon = "bell"
+description = "Unread GitHub notifications in the Noctalia bar, with an inbox panel to open and mark them read."
+tags = ["github", "notifications", "bar"]
 dependencies = []
 
 [[setting]]
-key = "label"
-type = "string"
-label_key = "settings.label.label"
-description_key = "settings.label.description"
-default = "ghbar"
+key = "notify_new"
+type = "bool"
+label_key = "settings.notify_new.label"
+description_key = "settings.notify_new.description"
+default = false
+
+[[service]]
+id = "poll"
+entry = "service.luau"
 
 [[widget]]
 id = "bar"
@@ -23,7 +27,7 @@ entry = "widget.luau"
 [[panel]]
 id = "panel"
 entry = "panel.luau"
-width = 320
-height = 160
+width = 380
+height = 480
 placement = "attached"
 open_near_click = true

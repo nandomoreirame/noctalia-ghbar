@@ -1,10 +1,11 @@
 {
-  "bar": { "tooltip": "Ghbar: clique para abrir o painel de exemplo" },
-  "panel": { "subtitle": "Edite panel.luau para começar o seu plugin" },
+  "bar": {
+    "tooltip": "Notificações do GitHub"
+  },
   "settings": {
-    "label": {
-      "label": "Texto na barra",
-      "description": "Texto ao lado do ícone na barra. Vazio volta para \"ghbar\"."
+    "notify_new": {
+      "label": "Toast na área de trabalho para novas notificações",
+      "description": "Mostra uma notificação na área de trabalho quando chega um item não lido. Desligado por padrão."
     }
   }
 }

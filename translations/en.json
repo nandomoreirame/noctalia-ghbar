@@ -1,10 +1,11 @@
 {
-  "bar": { "tooltip": "Ghbar: click to open the example panel" },
-  "panel": { "subtitle": "Edit panel.luau to start your plugin" },
+  "bar": {
+    "tooltip": "GitHub notifications"
+  },
   "settings": {
-    "label": {
-      "label": "Bar label",
-      "description": "Text shown next to the icon in the bar. Empty falls back to \"ghbar\"."
+    "notify_new": {
+      "label": "Desktop toast for new notifications",
+      "description": "Show a desktop notification when a new unread item arrives. Off by default."
     }
   }
 }

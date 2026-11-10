@@ -26,19 +26,20 @@ describe("plugin.toml", function()
 		end
 	end)
 
-	it("ships the panel attached, near the click, 320x160", function()
-		for _, needle in { 'placement = "attached"', "open_near_click = true", "width = 320", "height = 160" } do
-			has(needle)
-		end
-	end)
-
-	it("declares the label setting with its default and translated keys", function()
+	it("declares the service, the toast setting and the panel size", function()
 		for _, needle in {
-			'key = "label"',
-			'type = "string"',
-			'default = "ghbar"',
-			'label_key = "settings.label.label"',
-			'description_key = "settings.label.description"',
+			"[[service]]",
+			'id = "poll"',
+			'entry = "service.luau"',
+			'key = "notify_new"',
+			'type = "bool"',
+			"default = false",
+			'label_key = "settings.notify_new.label"',
+			'description_key = "settings.notify_new.description"',
+			"width = 380",
+			"height = 480",
+			'placement = "attached"',
+			"open_near_click = true",
 		} do
 			has(needle)
 		end

@@ -1,0 +1,1 @@
+-- Poll service placeholder. Task 6 fills in the loop.

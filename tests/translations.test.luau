@@ -7,7 +7,11 @@ local describe, it = runner.describe, runner.it
 
 local json = mock.new().noctalia.json
 
-local REQUIRED = { "bar.tooltip", "panel.subtitle", "settings.label.description", "settings.label.label" }
+local REQUIRED = {
+	"bar.tooltip",
+	"settings.notify_new.description",
+	"settings.notify_new.label",
+}
 
 local function flatten(node: any, prefix: string, out: { string })
 	for k, v in node do
