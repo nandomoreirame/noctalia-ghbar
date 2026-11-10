@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1001",
+    "reason": "review_requested",
+    "updated_at": "2026-11-10T12:00:00Z",
+    "subject": {
+      "title": "Add notifications widget",
+      "url": "https://api.github.com/repos/octo/hello/pulls/12",
+      "type": "PullRequest"
+    },
+    "repository": {
+      "full_name": "octo/hello"
+    }
+  },
+  {
+    "id": "1002",
+    "reason": "mention",
+    "updated_at": "2026-11-10T11:00:00Z",
+    "subject": {
+      "title": "Bug in the parser",
+      "url": "https://api.github.com/repos/octo/hello/issues/7",
+      "type": "Issue"
+    },
+    "repository": {
+      "full_name": "octo/hello"
+    }
+  },
+  {
+    "id": "1003",
+    "reason": "subscribed",
+    "updated_at": "2026-11-09T12:00:00Z",
+    "subject": {
+      "title": "v1.2.0",
+      "url": "https://api.github.com/repos/octo/hello/releases/55",
+      "type": "Release"
+    },
+    "repository": {
+      "full_name": "octo/hello"
+    }
+  }
+]
