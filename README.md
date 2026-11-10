@@ -1,31 +1,50 @@
-# Ghbar
+# ghbar
 
-Noctalia v5 plugin that <does what, in one line, for whom>.
+Unread GitHub notifications in the Noctalia bar, with an inbox panel to open and mark them read.
 
-<!-- Screenshot: save one as screenshots/main.png and embed it here, with alt text describing what the reader sees. -->
+![ghbar inbox panel listing three demo notifications](screenshots/panel.png)
 
 ## Why
 
-<Who has the problem, in their words.> <What they do today and what it costs them.> <Why the obvious alternative is not enough.> <What this plugin does differently, in one line.>
+Unread GitHub notifications only show up in a browser tab at `github.com/notifications`, so they are noticed late or never. Keeping that tab open is noisy and easy to bury under other work. ghbar puts the unread count in the Noctalia bar and the inbox in a panel, so you can open a thread and mark it read without leaving the desktop.
 
-## Install
+## Features
 
-Requires Noctalia v5 (plugin API 22 or later).
+- Unread count in the bar (caps at `50+`), hidden when the inbox is empty
+- Panel lists repository, title, reason and relative time
+- Click a row to open the page and mark the thread read
+- Optional desktop toast for newly arrived items (off by default)
+- Token from `gh auth token` only, never written to disk by the plugin
+
+## Quick start
+
+Requires Noctalia v5 (plugin API 22+) and the GitHub CLI logged in with the `repo` scope (`gh auth status`).
 
 ```bash
 mkdir -p ~/.local/share/noctalia/plugins
-ln -s "$PWD" ~/.local/share/noctalia/plugins/ghbar
+ln -sfn "$PWD" ~/.local/share/noctalia/plugins/ghbar
 ```
 
-Add `nandomoreirame/ghbar` to `[plugins] enabled` in `plugins.toml`, then add `[widget.ghbar] type = "nandomoreirame/ghbar:bar"` to a bar slot in `bar.toml` and restart Noctalia.
+Enable `nandomoreirame/ghbar` in `plugins.toml`, add `nandomoreirame/ghbar:bar` to a bar slot, then restart Noctalia. The widget appears when there is at least one unread notification (or an error).
 
 ## Usage
 
-<What appears in the bar, what a click opens, what each action does.>
+- The bar shows the GitHub glyph and the unread count. Click opens the panel.
+- Each panel row opens the subject in the browser and marks that thread read.
+- The refresh button polls immediately.
+- On a translucent bar the attached panel inherits the bar opacity. Float it for contrast:
+
+```toml
+[plugin_settings."<whoami>/ghbar"]
+panel_placement = "floating"
+panel_open_near_click = true
+```
+
+Replace `<whoami>` with the output of `whoami`. Restart the shell after changing placement.
 
 | Setting | Type | Default | Effect |
 | --- | --- | --- | --- |
-| `label` | string | `ghbar` | Text next to the icon in the bar |
+| `notify_new` | bool | `false` | Desktop toast when a new unread item arrives |
 
 ## Development
 
@@ -33,12 +52,17 @@ Needs the `luau` CLI on `PATH`.
 
 ```bash
 ./run-tests
+./run-tests tests/service.test.luau
+noctalia plugins lint .
 ```
 
 ## Security
 
-<List every network call, command and file this plugin touches, from the code. If it touches none, say so in one line.>
+- **Token:** obtained with `gh auth token` and held only in callback locals and the `Authorization` header of `noctalia.http`. Never stored in `noctalia.state`, logs, files, argv or notifications.
+- **Network:** `GET https://api.github.com/notifications?per_page=50` every 60 s; `PATCH https://api.github.com/notifications/threads/{id}` when a row is opened. No other hosts.
+- **Commands:** `gh auth token` for the token; `xdg-open` only for URLs that start with `https://github.com/`.
+- **Writes:** the only GitHub write is marking a single thread read. There is no bulk mark-all.
 
 ## License
 
-MIT, <Owner>. See [LICENSE](LICENSE).
+MIT, Fernando Moreira Costa. See [LICENSE](LICENSE).
