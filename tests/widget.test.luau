@@ -23,8 +23,8 @@ end
 describe("widget", function()
 	it("shows the glyph and 50+ from fifty", function()
 		local w = boot({
-			visible = true,
 			glyph = "brand-github",
+			glyphColor = "on_surface",
 			label = "50+",
 			count = 50,
 			empty = false,
@@ -37,35 +37,28 @@ describe("widget", function()
 		assert.equal(tree.children[2].props.text, "50+")
 	end)
 
-	it("hides the widget at zero without error", function()
+	it("keeps the glyph visible and dimmed at zero without error", function()
 		local w = boot({
-			visible = false,
 			glyph = "brand-github",
-			label = "0",
+			glyphColor = "on_surface_variant",
+			label = "",
 			count = 0,
 			empty = true,
 			error = nil,
 			rows = {},
 		})
-		assert.equal(last(w, "barWidget.setVisible")[1], false)
-
-		w.env.noctalia.state.set("view", {
-			visible = true,
-			glyph = "brand-github",
-			label = "1",
-			count = 1,
-			empty = false,
-			error = nil,
-			rows = {},
-		})
 		assert.equal(last(w, "barWidget.setVisible")[1], true)
+		local tree = last(w, "barWidget.render")[1]
+		assert.equal(tree.children[1].props.name, "brand-github")
+		assert.equal(tree.children[1].props.color, "on_surface_variant")
+		assert.equal(#tree.children, 1)
 	end)
 
 	it("shows the alert glyph on error", function()
 		local w = boot({
-			visible = true,
 			glyph = "alert-triangle",
-			label = "0",
+			glyphColor = "error",
+			label = "",
 			count = 0,
 			empty = false,
 			error = { kind = "auth", status = 401 },
@@ -78,8 +71,8 @@ describe("widget", function()
 
 	it("shows only the glyph on a vertical bar", function()
 		local w = boot({
-			visible = true,
 			glyph = "brand-github",
+			glyphColor = "on_surface",
 			label = "3",
 			count = 3,
 			empty = false,
@@ -94,8 +87,8 @@ describe("widget", function()
 
 	it("toggles the panel on click", function()
 		local w = boot({
-			visible = true,
 			glyph = "brand-github",
+			glyphColor = "on_surface",
 			label = "1",
 			count = 1,
 			empty = false,
@@ -106,10 +99,42 @@ describe("widget", function()
 		assert.equal(last(w, "noctalia.togglePanel")[1], "nandomoreirame/ghbar:panel")
 	end)
 
+	it("opens the inbox url on empty click instead of the panel", function()
+		local w = boot({
+			glyph = "brand-github",
+			glyphColor = "on_surface_variant",
+			label = "",
+			count = 0,
+			empty = true,
+			error = nil,
+			rows = {},
+		})
+		local before = #mock.calls(w.env, "noctalia.togglePanel")
+		w.call("onClick")
+		assert.equal(#mock.calls(w.env, "noctalia.togglePanel"), before)
+		assert.equal(w.env.noctalia.state.get("cmd.inbox"), 1)
+		w.call("onClick")
+		assert.equal(w.env.noctalia.state.get("cmd.inbox"), 2)
+	end)
+
+	it("opens the panel on error even when the count is zero", function()
+		local w = boot({
+			glyph = "alert-triangle",
+			glyphColor = "error",
+			label = "",
+			count = 0,
+			empty = false,
+			error = { kind = "network", status = 0 },
+			rows = {},
+		})
+		w.call("onClick")
+		assert.equal(last(w, "noctalia.togglePanel")[1], "nandomoreirame/ghbar:panel")
+	end)
+
 	it("sets a translated tooltip with the count", function()
 		local w = boot({
-			visible = true,
 			glyph = "brand-github",
+			glyphColor = "on_surface",
 			label = "3",
 			count = 3,
 			empty = false,
@@ -119,9 +144,9 @@ describe("widget", function()
 		assert.equal(last(w, "barWidget.setTooltip")[1], "bar.tooltip")
 
 		w.env.noctalia.state.set("view", {
-			visible = true,
 			glyph = "alert-triangle",
-			label = "0",
+			glyphColor = "error",
+			label = "",
 			count = 0,
 			empty = false,
 			error = { kind = "network", status = 0 },

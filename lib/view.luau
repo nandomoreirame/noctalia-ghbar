@@ -24,9 +24,14 @@ function View.build(state: any, nowMs: number): any
 	local count = #items
 	local err = state.error
 	local loaded = state.loaded == true
-	local label = if count >= 50 then "50+" else tostring(count)
+	local label = if count == 0 then "" elseif count >= 50 then "50+" else tostring(count)
 	local glyph = if err ~= nil then "alert-triangle" else "brand-github"
-	local visible = count > 0 or err ~= nil
+	local glyphColor = "on_surface"
+	if err ~= nil then
+		glyphColor = "error"
+	elseif count == 0 then
+		glyphColor = "on_surface_variant"
+	end
 	local empty = loaded and err == nil and count == 0
 	local rows = {}
 	for _, it in items do
@@ -41,8 +46,8 @@ function View.build(state: any, nowMs: number): any
 		})
 	end
 	return {
-		visible = visible,
 		glyph = glyph,
+		glyphColor = glyphColor,
 		label = label,
 		count = count,
 		empty = empty,

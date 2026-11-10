@@ -132,11 +132,8 @@ local function rowNode(row: any): any
 	})
 end
 
-local function body(v: any): any
-	if v and v.error and typeof(v.error.kind) == "string" then
-		return errorBlock(v.error.kind)
-	end
-	if v == nil or v.empty == true or #(v.rows or {}) == 0 then
+local function listBlock(v: any): any
+	if v == nil or #(v.rows or {}) == 0 then
 		return emptyBlock()
 	end
 	local children = {}
@@ -146,6 +143,26 @@ local function body(v: any): any
 	return ui.scroll({ flexGrow = 1 }, {
 		ui.column({ gap = 6, align = "stretch", paddingH = 2, paddingV = 4 }, children),
 	})
+end
+
+local function body(v: any): any
+	local parts = {}
+	if v and v.error and typeof(v.error.kind) == "string" then
+		table.insert(parts, errorBlock(v.error.kind))
+	end
+	if v == nil or v.empty == true or #(v.rows or {}) == 0 then
+		if #parts == 0 then
+			return emptyBlock()
+		end
+		-- Error with an empty retained list: still show the empty state under the banner.
+		table.insert(parts, emptyBlock())
+		return ui.column({ flexGrow = 1, gap = 8, align = "stretch" }, parts)
+	end
+	table.insert(parts, listBlock(v))
+	if #parts == 1 then
+		return parts[1]
+	end
+	return ui.column({ flexGrow = 1, gap = 8, align = "stretch" }, parts)
 end
 
 local function render(v: any)

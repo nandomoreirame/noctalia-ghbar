@@ -13,20 +13,19 @@ function Gh.parseToken(res: { exitCode: number, stdout: string?, stderr: string?
 	local stdout = if typeof(res.stdout) == "string" then res.stdout else ""
 	local stderr = if typeof(res.stderr) == "string" then res.stderr else ""
 
+	if exitCode == 0 then
+		local token = trim(stdout)
+		if token == "" then
+			return { ok = false, error = "logged-out" }
+		end
+		return { ok = true, token = token }
+	end
+
 	if exitCode == 127 or string.find(stderr, "not found", 1, true) ~= nil then
 		return { ok = false, error = "no-gh" }
 	end
 
-	if exitCode ~= 0 then
-		return { ok = false, error = "logged-out" }
-	end
-
-	local token = trim(stdout)
-	if token == "" then
-		return { ok = false, error = "logged-out" }
-	end
-
-	return { ok = true, token = token }
+	return { ok = false, error = "logged-out" }
 end
 
 function Gh.isSafeOpenUrl(url: any): boolean

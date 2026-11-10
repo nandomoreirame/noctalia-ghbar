@@ -87,8 +87,36 @@ describe("service poll", function()
 	end)
 
 	it("token never appears in state, logs or notifications", function()
-		local s = boot()
+		local s = boot({ config = { notify_new = true } })
 		answerHttp(s, 1, { ok = true, status = 200, body = FIXTURE })
+		-- Second poll with one extra item fires a toast while notify_new is on.
+		local plus = mock.json.decode(FIXTURE)
+		table.insert(plus, {
+			id = "2001",
+			reason = "mention",
+			updated_at = "2026-11-10T13:00:00Z",
+			subject = {
+				title = "extra",
+				url = "https://api.github.com/repos/octo/hello/issues/99",
+				type = "Issue",
+			},
+			repository = { full_name = "octo/hello" },
+		})
+		mock.setNow(s.env, 60000)
+		s.call("update")
+		answerHttp(s, 2, { ok = true, status = 200, body = mock.json.encode(plus) })
+		assert.equal(#mock.calls(s.env, "noctalia.notify") >= 1, true)
+		-- Open + PATCH path also must not leak the token.
+		s.env.noctalia.state.set("cmd.open", { id = "1001", n = 1 })
+		local patchCb = nil
+		for _, call in httpCalls(s) do
+			if call[1].method == "PATCH" then
+				patchCb = call[2]
+			end
+		end
+		assert.equal(patchCb ~= nil, true)
+		patchCb({ ok = true, status = 205, body = "" })
+
 		local paths = {
 			"noctalia.state.set",
 			"noctalia.log",
@@ -100,6 +128,10 @@ describe("service poll", function()
 				local text = mock.json.encode(call)
 				assert.equal(string.find(text, "SECRET-GH", 1, true), nil)
 			end
+		end
+		for _, call in mock.calls(s.env, "noctalia.runAsync") do
+			local text = mock.json.encode(call[1])
+			assert.equal(string.find(text, "SECRET-GH", 1, true), nil)
 		end
 	end)
 

@@ -9,11 +9,12 @@ local view = require("./lib/view.luau")
 local TICK_MS = 15000
 local POLL_MS = 60000
 local NOTIF_URL = "https://api.github.com/notifications?per_page=50"
+local INBOX_URL = "https://github.com/notifications"
 
 local state = poll.create()
 local nextPollAt = 0
 local generation = 0
-local inFlight = false
+local pendingMark = {} -- id -> true while a mark-read PATCH is in flight
 
 local function now(): number
 	return noctalia.nowMs()
@@ -36,8 +37,17 @@ local function clearError()
 		items = state.items,
 		loaded = state.loaded,
 		error = nil,
-		fetchedAt = state.fetchedAt,
 	}
+end
+
+local function filterPending(items: { any }): { any }
+	local out = {}
+	for _, it in items do
+		if not pendingMark[it.id] then
+			table.insert(out, it)
+		end
+	end
+	return out
 end
 
 local function toastEnabled(): boolean
@@ -67,7 +77,6 @@ local function onHttp(gen: number, res: any)
 	if gen ~= generation then
 		return
 	end
-	inFlight = false
 	local status = if typeof(res.status) == "number" then res.status else 0
 	if res.ok ~= true or status ~= 200 then
 		noctalia.log("ghbar poll status " .. tostring(status))
@@ -87,9 +96,10 @@ local function onHttp(gen: number, res: any)
 		return
 	end
 	noctalia.log("ghbar poll status 200")
+	local items = filterPending(parsed.items)
 	local previous = state
-	local fresh = poll.fresh(previous, parsed.items)
-	state = poll.succeed(state, parsed.items, now())
+	local fresh = poll.fresh(previous, items)
+	state = poll.succeed(state, items, now())
 	maybeNotify(fresh)
 	publish()
 end
@@ -111,7 +121,6 @@ end
 local function startPoll()
 	generation += 1
 	local gen = generation
-	inFlight = true
 	nextPollAt = now() + POLL_MS
 
 	local launched = noctalia.runAsync(gh.TOKEN_ARGV, function(res)
@@ -120,7 +129,6 @@ local function startPoll()
 		end
 		local parsed = gh.parseToken(res)
 		if parsed.ok ~= true then
-			inFlight = false
 			applyFail(parsed.error, 0)
 			return
 		end
@@ -129,7 +137,6 @@ local function startPoll()
 	end)
 
 	if launched == false then
-		inFlight = false
 		applyFail("no-gh", 0)
 	end
 end
@@ -173,6 +180,7 @@ local function openItem(payload: any)
 	if removed.item == nil then
 		return
 	end
+	pendingMark[id] = true
 	state = removed.state
 	publish()
 
@@ -183,6 +191,7 @@ local function openItem(payload: any)
 
 	withToken(function(token)
 		markRead(token, id, function(ok, status)
+			pendingMark[id] = nil
 			if ok then
 				clearError()
 				publish()
@@ -192,9 +201,14 @@ local function openItem(payload: any)
 			applyFail("mark", status)
 		end)
 	end, function(kind)
+		pendingMark[id] = nil
 		state = poll.restore(state, removed.item, removed.index)
 		applyFail(kind, 0)
 	end)
+end
+
+local function openInbox()
+	noctalia.runAsync({ "xdg-open", INBOX_URL })
 end
 
 noctalia.state.watch("cmd.refresh", function()
@@ -203,6 +217,10 @@ end)
 
 noctalia.state.watch("cmd.open", function(payload)
 	openItem(payload)
+end)
+
+noctalia.state.watch("cmd.inbox", function()
+	openInbox()
 end)
 
 function update()

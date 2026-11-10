@@ -15,7 +15,6 @@ function Poll.create(): any
 		items = {},
 		loaded = false,
 		error = nil,
-		fetchedAt = 0,
 	}
 end
 
@@ -24,7 +23,6 @@ function Poll.succeed(state: any, items: { any }, nowMs: number): any
 		items = copyItems(items),
 		loaded = true,
 		error = nil,
-		fetchedAt = nowMs,
 	}
 end
 
@@ -33,7 +31,6 @@ function Poll.fail(state: any, kind: string, status: number, nowMs: number): any
 		items = copyItems(state.items or {}),
 		loaded = state.loaded == true,
 		error = { kind = kind, status = status },
-		fetchedAt = nowMs,
 	}
 end
 
@@ -67,7 +64,6 @@ function Poll.remove(state: any, id: string): any
 			items = items,
 			loaded = state.loaded,
 			error = state.error,
-			fetchedAt = state.fetchedAt,
 		},
 		item = item,
 		index = index,
@@ -81,8 +77,16 @@ function Poll.restore(state: any, item: any, index: number): any
 			items = items,
 			loaded = state.loaded,
 			error = state.error,
-			fetchedAt = state.fetchedAt,
 		}
+	end
+	for _, it in items do
+		if it.id == item.id then
+			return {
+				items = items,
+				loaded = state.loaded,
+				error = state.error,
+			}
+		end
 	end
 	if index < 1 then
 		index = 1
@@ -95,7 +99,6 @@ function Poll.restore(state: any, item: any, index: number): any
 		items = items,
 		loaded = state.loaded,
 		error = state.error,
-		fetchedAt = state.fetchedAt,
 	}
 end
 

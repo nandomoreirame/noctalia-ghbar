@@ -156,4 +156,55 @@ describe("service open", function()
 			end
 		end
 	end)
+
+	it("keeps a pending mark-read id out of a concurrent poll", function()
+		local s = loadWithFixture()
+		s.env.noctalia.state.set("cmd.open", { id = "1001", n = 1 })
+		assert.equal(#lastView(s).rows, 2)
+		s.env.noctalia.state.set("cmd.refresh", 1)
+		answerHttp(s, #httpCalls(s), { ok = true, status = 200, body = FIXTURE })
+		assert.equal(#lastView(s).rows, 2)
+		local ids = {}
+		for _, row in lastView(s).rows do
+			ids[row.id] = true
+		end
+		assert.equal(ids["1001"], nil)
+	end)
+
+	it("does not duplicate a row when restore races a poll", function()
+		local s = loadWithFixture()
+		s.env.noctalia.state.set("cmd.open", { id = "1001", n = 1 })
+		s.env.noctalia.state.set("cmd.refresh", 1)
+		-- Clear pending by answering PATCH fail after poll re-listed the id:
+		-- first clear pendingMark by failing PATCH after poll already restored via filter.
+		-- Force: answer GET with fixture (filters 1001 while pending), then fail PATCH
+		-- which restores; restore must not duplicate if somehow present.
+		answerHttp(s, #httpCalls(s), { ok = true, status = 200, body = FIXTURE })
+		local _, _, cb = lastPatch(s)
+		cb({ ok = false, status = 500, body = "" })
+		local v = lastView(s)
+		local count = 0
+		for _, row in v.rows do
+			if row.id == "1001" then
+				count += 1
+			end
+		end
+		assert.equal(count, 1)
+		assert.equal(#v.rows, 3)
+	end)
+
+	it("opens the web inbox on cmd.inbox", function()
+		local s = loadWithFixture()
+		local before = #mock.calls(s.env, "noctalia.runAsync")
+		s.env.noctalia.state.set("cmd.inbox", 1)
+		local opened = false
+		for i = before + 1, #mock.calls(s.env, "noctalia.runAsync") do
+			local argv = mock.calls(s.env, "noctalia.runAsync")[i][1]
+			if typeof(argv) == "table" and argv[1] == "xdg-open" then
+				assert.equal(argv[2], "https://github.com/notifications")
+				opened = true
+			end
+		end
+		assert.equal(opened, true)
+	end)
 end)

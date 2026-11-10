@@ -8,8 +8,8 @@ Unread GitHub notifications live only in the browser at `github.com/notification
 
 ## Goals
 
-- Show the unread notification count in the bar within one poll interval (60 s) of a change on GitHub.
-- Read and clear a notification from the panel in one click, without leaving the desktop.
+- Show the unread notification count in the bar within one poll interval (60 s) of a change on GitHub; keep a dimmed GitHub glyph when the inbox is empty.
+- Read and clear a notification from the panel in one click, without leaving the desktop; an empty-bar click opens the web inbox.
 - Hold no GitHub secret on disk: the token comes from the already-logged-in `gh` CLI.
 
 ## Context
@@ -31,12 +31,13 @@ The author runs Noctalia v5 and maintains one repo per plugin (`nandomoreirame/n
 1. **[REQ-001]** WHEN the service starts THEN the system SHALL obtain the token with `gh auth token` and keep it only in a local variable, never in state, logs, files, argv or notifications
 2. **[REQ-002]** WHEN the poll cycle fires THEN the system SHALL call `GET /notifications?per_page=50` every 60 s and replace the list with the answer; a failed poll SHALL keep the last list and set the error state
 3. **[REQ-003]** WHEN there is at least one unread notification THEN the bar widget SHALL show the GitHub glyph and the count, rendering `50+` from 50 upward
-4. **[REQ-004]** WHEN the count is 0 and there is no error THEN the bar widget SHALL be hidden
-5. **[REQ-005]** WHEN an error occurs (`gh` missing or logged out, 401, 403, offline) THEN the bar widget SHALL be visible with an alert glyph and the panel SHALL show the cause and a suggested action
-6. **[REQ-006]** WHEN the widget is clicked THEN the system SHALL open a panel listing each notification with repository, title, subject type, reason and relative time
+4. **[REQ-004]** WHEN the count is 0 and there is no error THEN the bar widget SHALL stay visible with a dimmed GitHub glyph and no count label
+5. **[REQ-005]** WHEN an error occurs (`gh` missing or logged out, 401, 403, offline) THEN the bar widget SHALL show an alert glyph and the panel SHALL show the cause and a suggested action above any retained list
+6. **[REQ-006]** WHEN the widget is clicked and there is at least one notification or an error THEN the system SHALL open a panel listing each notification with repository, title, subject type, reason and relative time
 7. **[REQ-007]** WHEN a notification is clicked THEN the system SHALL open its web page in the browser and call `PATCH /notifications/threads/{id}`; IF the PATCH fails THEN the item SHALL be restored and an error shown
 8. **[REQ-008]** WHEN the plugin is created THEN it SHALL start from `noctalia-scaffold` and `./run-tests` SHALL pass before any ghbar logic is added
 9. **[REQ-009]** WHEN the widget or panel renders THEN the system SHALL use only theme tokens (no hex colors) and explicit visual properties on every render
+13. **[REQ-013]** WHEN the widget is clicked and the count is 0 with no error THEN the system SHALL open `https://github.com/notifications` in the browser without opening the panel
 
 ### P2 (Should Have)
 
@@ -63,8 +64,9 @@ None.
 1. **Token from `gh auth token`** - Chose reusing the `gh` CLI over a PAT in settings because it writes no secret to disk and needs no setup. Alternative discarded: PAT in settings (secret at rest). ADR: none
 2. **Open and mark read per item, no bulk action** - Chose per-item PATCH over "mark all read" to avoid accidental mass writes. ADR: none
 3. **Unread only, like the website** - Chose the API default over `participating=true` so the count matches github.com. ADR: none
-4. **Hide at zero** - Chose hiding the widget over a dimmed glyph; the error state stays visible so a failure never looks like an empty inbox. ADR: none
+4. **Always visible** - Chose a dimmed glyph at zero over hiding the widget, so the bar stays a click target for the GitHub inbox. The error state uses the alert glyph. ADR: none
 5. **Scaffold structure** - Pure `lib/` modules, thin `widget.luau` and `panel.luau`, polling in `service.luau` as in aibar. ADR: none
+6. **Empty click opens the web inbox** - Chose `xdg-open https://github.com/notifications` over an empty panel when count is 0 and there is no error. ADR: none
 
 ## Grilling Log
 
@@ -109,7 +111,7 @@ None.
 | REQ-001 | Token via `gh auth token`, in memory only | P1 | Pending |
 | REQ-002 | Fixed 60 s poll of unread notifications | P1 | Pending |
 | REQ-003 | Count in the bar, `50+` cap | P1 | Pending |
-| REQ-004 | Hidden at zero | P1 | Pending |
+| REQ-004 | Dimmed glyph at zero, always visible | P1 | Pending |
 | REQ-005 | Error state with alert glyph and cause | P1 | Pending |
 | REQ-006 | Panel lists the inbox | P1 | Pending |
 | REQ-007 | Click opens page and marks as read | P1 | Pending |
@@ -118,3 +120,4 @@ None.
 | REQ-010 | Optional toast, off by default | P2 | Pending |
 | REQ-011 | Refresh, empty state, i18n | P2 | Pending |
 | REQ-012 | README from template with Security section | P2 | Pending |
+| REQ-013 | Empty click opens github.com/notifications | P1 | Pending |

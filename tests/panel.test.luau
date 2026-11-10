@@ -147,6 +147,20 @@ describe("panel", function()
 		end
 	end)
 
+	it("keeps the retained list under an error banner", function()
+		local items = N.parse(decode(fixture)).items
+		local base = Poll.succeed(Poll.create(), items, 1)
+		local v = View.build(Poll.fail(base, "network", 0, 2), (items[1].updatedMs or 0) + 3600 * 1000)
+		local p = boot(v)
+		local t = texts(p)
+		assert.equal(has(t, "error.network.title"), true)
+		assert.equal(has(t, "octo/hello"), true)
+		assert.equal(has(t, "Add notifications widget"), true)
+		assert.equal(#findAll(p, function(n)
+			return n.props and (n.props.key == "1001" or n.props.key == "1002" or n.props.key == "1003")
+		end), 3)
+	end)
+
 	it("refresh bumps cmd.refresh", function()
 		local p = boot(fixtureView())
 		local btn = find(p, function(n)

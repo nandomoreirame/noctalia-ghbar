@@ -1,22 +1,23 @@
--- Bar widget: glyph + count from the published view. Click toggles the panel.
+-- Bar widget: always-visible GitHub glyph + count from the published view.
+-- Empty inbox click opens github.com/notifications; otherwise toggles the panel.
+
+local present = require("./lib/present.luau")
 
 local PANEL = "nandomoreirame/ghbar:panel"
 
 local function render(v: any)
 	if typeof(v) ~= "table" then
-		barWidget.setVisible(false)
-		return
+		v = { glyph = "brand-github", glyphColor = "on_surface_variant", label = "", count = 0, empty = false, error = nil, rows = {} }
 	end
 
 	local vertical = barWidget.isVertical()
-	local err = v.error ~= nil
-	local color = if err then "error" else "on_surface"
+	local color = v.glyphColor or "on_surface"
 	local children = {
 		ui.glyph({ name = v.glyph or "brand-github", color = color }),
 	}
-	if not vertical then
+	if not vertical and typeof(v.label) == "string" and v.label ~= "" then
 		table.insert(children, ui.label({
-			text = v.label or "",
+			text = v.label,
 			color = "on_surface",
 			fontSize = 12,
 			fontWeight = "medium",
@@ -31,9 +32,9 @@ local function render(v: any)
 		paddingV = 2,
 	}, children))
 
-	barWidget.setVisible(v.visible == true)
+	barWidget.setVisible(true)
 
-	if err then
+	if v.error ~= nil then
 		barWidget.setTooltip(noctalia.tr("bar.tooltip_error"))
 	else
 		barWidget.setTooltip(noctalia.tr("bar.tooltip", { n = v.count or 0 }))
@@ -41,6 +42,13 @@ local function render(v: any)
 end
 
 function onClick()
+	local v = noctalia.state.get("view")
+	local count = if typeof(v) == "table" then (v.count or 0) else 0
+	local err = typeof(v) == "table" and v.error ~= nil
+	if count == 0 and not err then
+		noctalia.state.set("cmd.inbox", present.bump(noctalia.state.get("cmd.inbox")))
+		return
+	end
 	noctalia.togglePanel(PANEL)
 end
 

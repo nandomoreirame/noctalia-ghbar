@@ -10,6 +10,15 @@ describe("gh token", function()
 		assert.equal(r.ok, true)
 		assert.equal(r.token, "SECRET-GH")
 	end)
+	it("keeps a successful token even when stderr mentions not found", function()
+		local r = Gh.parseToken({
+			exitCode = 0,
+			stdout = "SECRET-GH\n",
+			stderr = "warning: path not found in config",
+		})
+		assert.equal(r.ok, true)
+		assert.equal(r.token, "SECRET-GH")
+	end)
 	it("reports gh as missing on exit 127", function()
 		local r = Gh.parseToken({ exitCode = 127, stdout = "", stderr = "gh: command not found" })
 		assert.equal(r.ok, false)
