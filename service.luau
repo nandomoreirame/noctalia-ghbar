@@ -1,4 +1,4 @@
--- Poll service: only entry that runs gh, HTTP and notifications.
+-- Poll service: only entry that runs gh, HTTP, xdg-open and notifications.
 -- The token lives only in callback locals and http headers.
 
 local gh = require("./lib/gh.luau")
@@ -26,6 +26,18 @@ end
 local function applyFail(kind: string, status: number)
 	state = poll.fail(state, kind, status, now())
 	publish()
+end
+
+local function clearError()
+	if state.error == nil then
+		return
+	end
+	state = {
+		items = state.items,
+		loaded = state.loaded,
+		error = nil,
+		fetchedAt = state.fetchedAt,
+	}
 end
 
 local function onHttp(gen: number, res: any)
@@ -95,6 +107,77 @@ local function startPoll()
 		applyFail("no-gh", 0)
 	end
 end
+
+local function markRead(token: string, id: string, done: (ok: boolean, status: number) -> ())
+	noctalia.http({
+		url = "https://api.github.com/notifications/threads/" .. id,
+		method = "PATCH",
+		headers = {
+			"Authorization: Bearer " .. token,
+			"Accept: application/vnd.github+json",
+			"User-Agent: noctalia-ghbar",
+		},
+	}, function(res)
+		local status = if typeof(res.status) == "number" then res.status else 0
+		local ok = res.ok == true and (status == 200 or status == 205)
+		done(ok, status)
+	end)
+end
+
+local function withToken(done: (token: string) -> (), onErr: (kind: string) -> ())
+	local launched = noctalia.runAsync(gh.TOKEN_ARGV, function(res)
+		local parsed = gh.parseToken(res)
+		if parsed.ok ~= true then
+			onErr(parsed.error)
+			return
+		end
+		done(parsed.token)
+	end)
+	if launched == false then
+		onErr("no-gh")
+	end
+end
+
+local function openItem(payload: any)
+	if typeof(payload) ~= "table" or typeof(payload.id) ~= "string" then
+		return
+	end
+	local id = payload.id
+	local removed = poll.remove(state, id)
+	if removed.item == nil then
+		return
+	end
+	state = removed.state
+	publish()
+
+	local url = removed.item.url
+	if gh.isSafeOpenUrl(url) then
+		noctalia.runAsync({ "xdg-open", url })
+	end
+
+	withToken(function(token)
+		markRead(token, id, function(ok, status)
+			if ok then
+				clearError()
+				publish()
+				return
+			end
+			state = poll.restore(state, removed.item, removed.index)
+			applyFail("mark", status)
+		end)
+	end, function(kind)
+		state = poll.restore(state, removed.item, removed.index)
+		applyFail(kind, 0)
+	end)
+end
+
+noctalia.state.watch("cmd.refresh", function()
+	startPoll()
+end)
+
+noctalia.state.watch("cmd.open", function(payload)
+	openItem(payload)
+end)
 
 function update()
 	if now() >= nextPollAt then

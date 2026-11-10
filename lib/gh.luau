@@ -29,4 +29,8 @@ function Gh.parseToken(res: { exitCode: number, stdout: string?, stderr: string?
 	return { ok = true, token = token }
 end
 
+function Gh.isSafeOpenUrl(url: any): boolean
+	return typeof(url) == "string" and string.sub(url, 1, 19) == "https://github.com/"
+end
+
 return Gh
