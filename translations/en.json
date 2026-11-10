@@ -3,9 +3,59 @@
     "tooltip": "{n} unread GitHub notifications",
     "tooltip_error": "GitHub notifications unavailable"
   },
+  "error": {
+    "auth": {
+      "title": "GitHub session expired",
+      "action": "Run gh auth login and keep the repo scope."
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "action": "Check that gh has the repo scope for notifications."
+    },
+    "http": {
+      "title": "GitHub returned an error",
+      "action": "Try refresh in a moment."
+    },
+    "logged-out": {
+      "title": "gh is logged out",
+      "action": "Run gh auth login on this machine."
+    },
+    "mark": {
+      "title": "Could not mark as read",
+      "action": "The item was restored; try again."
+    },
+    "network": {
+      "title": "Offline or unreachable",
+      "action": "Check the network and press refresh."
+    },
+    "no-gh": {
+      "title": "gh CLI not found",
+      "action": "Install the GitHub CLI and sign in."
+    }
+  },
   "notify": {
     "title": "GitHub",
     "more": "{n} more new notifications"
+  },
+  "panel": {
+    "empty": "No unread notifications",
+    "refresh": "Refresh",
+    "title": "Inbox"
+  },
+  "reason": {
+    "assign": "Assigned",
+    "author": "Author",
+    "ci_activity": "CI activity",
+    "comment": "Comment",
+    "invitation": "Invitation",
+    "manual": "Manual",
+    "mention": "Mention",
+    "other": "Notification",
+    "review_requested": "Review requested",
+    "security_alert": "Security alert",
+    "state_change": "State change",
+    "subscribed": "Subscribed",
+    "team_mention": "Team mention"
   },
   "settings": {
     "notify_new": {

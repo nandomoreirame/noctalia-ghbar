@@ -3,9 +3,59 @@
     "tooltip": "{n} notificações não lidas do GitHub",
     "tooltip_error": "Notificações do GitHub indisponíveis"
   },
+  "error": {
+    "auth": {
+      "title": "Sessão do GitHub expirou",
+      "action": "Rode gh auth login e mantenha o escopo repo."
+    },
+    "forbidden": {
+      "title": "Acesso negado",
+      "action": "Confira se o gh tem o escopo repo para notificações."
+    },
+    "http": {
+      "title": "O GitHub retornou um erro",
+      "action": "Tente atualizar em instantes."
+    },
+    "logged-out": {
+      "title": "gh está desconectado",
+      "action": "Rode gh auth login nesta máquina."
+    },
+    "mark": {
+      "title": "Não foi possível marcar como lida",
+      "action": "O item voltou à lista; tente de novo."
+    },
+    "network": {
+      "title": "Sem rede ou inacessível",
+      "action": "Confira a rede e pressione atualizar."
+    },
+    "no-gh": {
+      "title": "gh CLI não encontrado",
+      "action": "Instale o GitHub CLI e faça login."
+    }
+  },
   "notify": {
     "title": "GitHub",
     "more": "mais {n} notificações novas"
+  },
+  "panel": {
+    "empty": "Nenhuma notificação não lida",
+    "refresh": "Atualizar",
+    "title": "Caixa de entrada"
+  },
+  "reason": {
+    "assign": "Atribuído",
+    "author": "Autor",
+    "ci_activity": "Atividade de CI",
+    "comment": "Comentário",
+    "invitation": "Convite",
+    "manual": "Manual",
+    "mention": "Menção",
+    "other": "Notificação",
+    "review_requested": "Revisão pedida",
+    "security_alert": "Alerta de segurança",
+    "state_change": "Mudança de estado",
+    "subscribed": "Inscrito",
+    "team_mention": "Menção de time"
   },
   "settings": {
     "notify_new": {
