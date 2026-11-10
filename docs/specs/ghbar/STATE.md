@@ -1,7 +1,7 @@
 feature: ghbar
 phase: implement
 review: pending (self-assessment)
-independent_reviewer_tried: opencode (exit 3 unavailable); agy/codex disabled
+independent_reviewer_tried: opencode exit 3 (unavailable) on fix-round re-review; agy/codex disabled; Claude panel only in Claude Code
 spec_path: docs/specs/ghbar/SPEC.md
 plan_path: docs/plans/2026-11-10-ghbar.md
 implemented_by: grok
